@@ -203,7 +203,10 @@ function Config:save()
   EventManager:fireEvent("config_save", "Config")
 end
 
-
+Updater = {}
+function Updater:run()
+  
+end
 
 
 
