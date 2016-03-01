@@ -260,24 +260,23 @@ function StatusManager:removeStatusHandler(func)
   end
   return false
 end
-function StatusManager:_fire(e)
-  for i=1,#self.handlers do
-    local e = self.handlers[i]
+function StatusManager:fire(ev)
+  for i,e in ipairs(self.handlers) do
     if e.context then
-      e.handler(context, e)
+      e.handler(e.context, ev)
     else
-      e.handler(e)
+      e.handler(ev)
     end
   end
 end
 function StatusManager:commitInitial(sender_name, message, percentage, sender)
-  self:_fire({sender_name = sender_name, message = message, percentage = percentage, init = true, close = false, sender = sender})
+  self:fire({sender_name = sender_name, message = message, percentage = percentage, init = true, close = false, sender = sender})
 end
 function StatusManager:commitUpdate(sender_name, message, percentage, sender)
-  self:_fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = false, sender = sender})
+  self:fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = false, sender = sender})
 end
 function StatusManager:commitClose(sender_name, message, percentage, sender)
-  self:_fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = true, sender = sender})
+  self:fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = true, sender = sender})
 end
 
 Updater = {versions = {}}
