@@ -11,7 +11,7 @@ function init()
   
   if Updater:run() then
     ConsoleManager:log("Updated. Rebooting computer...")
-    event,key = os.pullEvent("key")
+    sleep(120)
     os.reboot()
   end
 end
