@@ -1,5 +1,3 @@
-VERSION = 0.1
-
 EventManager = {eventHandlers = {}, running = false}
 function EventManager:run()
   while self.running do
@@ -63,13 +61,59 @@ function EventManager:fireEventSync(name, ...)
   end
 end
 
-function string.split(s, splitter)
-  result = {}
-  for i in string.gmatch(s, "%S+") do
-    table.insert(result,i)
+function string.split(s, delimiter)
+  local result = { }
+  local from  = 1
+  local delim_from, delim_to = string.find( s, delimiter, from  )
+  while delim_from do
+    table.insert( result, string.sub( s, from , delim_from-1 ) )
+    from  = delim_to + 1
+    delim_from, delim_to = string.find( s, delimiter, from  )
   end
-  
+  table.insert( result, string.sub( s, from  ) )
   return result
+end
+function string.unwrap(s, opener, closer)
+  local result = {}
+  local from = 1
+  local to = 1
+  local delim_from, delim_to = string.find(s,opener,from)
+  local openerCount = 0
+  while delim_from or (openerCount > 0) do
+    if openerCount == 0 then
+      from = delim_to + 1
+      to = from
+    else
+      local delim1_from, delim1_to = string.find(s,closer,to)
+      if not delim1_from then
+        break
+      end
+      if (delim1_from < delim_from) or not delim_from then
+        if (delim1_from - 1) < from then
+          table.insert(result,"")
+        else
+          table.insert(result,string.sub(s,from,delim1_from - 1))
+        end
+        openerCount = 0
+        from = delim1_to + 1
+        to = from
+      else 
+        openerCount = openerCount + 1
+        to = delim1_to + 1
+      end
+    end
+    delim_from, delim_to = string.find(s,opener,to)
+  end
+  return result
+end
+function string.unwrapOnce(s, opener, closer)
+  s = s:gsub(opener,"",1)
+  return string.sub(s,s:len() - closer:len())
+end
+
+function bool.parseString(s)
+  s = string.gsub(s," ","")
+  return s == "true"
 end
 
 ConsoleManager = {stringBuffer = ""}
@@ -91,7 +135,7 @@ function ConsoleManager:stop()
   EventManager:removeEventHandler("key",self.enterHandler)
 end
 function ConsoleManager:log(message)
-  EventManager:fireEvent("console_log", message)
+  EventManager:fireEvent("console_log",message)
 end
 
 CommandManager = {commandHandlers = {}}
@@ -203,12 +247,139 @@ function Config:save()
   EventManager:fireEvent("config_save", "Config")
 end
 
-Updater = {}
-function Updater:run()
-  
+StatusManager = {handlers = {}}
+function StatusManager:addStatusHandler(func, context)
+  table.insert(self.handlers, {handler = func, context = context})
+end
+function StatusManager:removeStatusHandler(func)
+  for i=1, #self.handlers do
+    if self.handlers[i].handler == func then
+      table.remove(self.handlers,i)
+      return true
+    end
+  end
+  return false
+end
+function StatusManager:_fire(e)
+  for i=1,#self.handlers do
+    local e = self.handlers[i]
+    if e.context then
+      e.handler(context, e)
+    else
+      e.handler(e)
+    end
+  end
+end
+function StatusManager:commitInitial(sender_name, message, percentage, sender)
+  self._fire({sender_name = sender_name, message = message, percentage = percentage, init = true, close = false, sender = sender})
+end
+function StatusManager:commitUpdate(sender_name, message, percentage, sender)
+  self._fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = false, sender = sender})
+end
+function StatusManager:commitClose(sender_name, message, percentage, sender)
+  self._fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = true, sender = sender})
 end
 
-
+Updater = {versions = {}}
+function Updater:init()
+  if not Config:exists("versions_lookup") then
+    Config:set("versions_lookup", {})
+  else
+    self.versions = Config:get("versions_lookup")
+  end
+end
+function Updater:getApiVersion(name)
+  if self.versions[name] then
+    return self.versions[name]
+  else
+    return 0
+  end
+end
+function Updater:setApiVersion(name, version)
+  self.versions[name] = version
+end
+function Updater:run()
+  local lookupUrl = "https://raw.githubusercontent.com/N3xed/ComputerCraft/master/lookup.txt"
+  local updateUrl = "https://raw.githubusercontent.com/N3xed/ComputerCraft/master/src/"
+  
+  StatusManager:commitInitial("Updater","Getting lookup.", 0, self)
+  
+  local lookupTable = {}
+  do
+    local success, handle = Updater.httpGet(lookupUrl)
+    if not success then
+      StatusManager:commitClose("Updater","Failed",100,self)
+      return false
+    end
+    
+    local lookupText = handle.readAll()
+    lookupText = string.gsub(lookupText, "\n", "")
+    lookupText = string.gsub(lookupText, " ", "")
+    local lookups = string.split(lookupText, ";")
+    
+    for i=1, #lookups do
+      local e = lookups[i]
+      if e ~= "" then
+        local unwrapped_split = string.split(string.unwrapOnce(e, "{", "}"), ",")
+        local result = {}
+        result.net_files = string.split(string.unwrapOnce(unwrapped_split[1], "{", "}"), "/")
+        result.version = tonumber(unwrapped_split[2])
+        result.file_name = unwrapped_split[3]
+        result.forceUpdate = bool.parseString(unwrapped_split[4])
+        
+        if result.forceUpdate or (self:getApiVersion(result.file_name) < result.version) then
+          table.insert(lookupTable, result)
+        end
+      end
+    end
+  end
+  
+  if #lookupTable == 0 then
+    StatusManager:commitClose("Updater","No updates found. Finished.", 100,self)
+    return false
+  end
+  
+  for k,v in ipairs(lookupTable) do
+    StatusManager:commitUpdate(string.format("Updater","[%d/%d] Getting files from server.",k, #lookupTable), 100 / (#lookupTable + 2) * (k),self)
+    lookupTable[k].sources = {}
+    for k1, v1 in ipairs(v.net_files) do
+      StatusManager:commitUpdate(string.format("Updater","[%d/%d](%d/%d) Getting file: '%s'",k, #lookupTable, k1, #v.net_files, v1), 100 / (#lookupTable + 2) * (k),self)
+      local success, handle = Updater.httpGet(updateUrl..v1)
+      if not success then
+        StatusManager:commitClose(string.format("Updater","[%d/%d](%d/%d) Failed getting file: '%s'",k, #lookupTable, k1, #v.net_files, v1), 100,self)
+        return false
+      end
+      table.insert(lookupTable[k].sources,k1,handle.readAll())
+      handle.close()
+    end
+  end
+  
+  for k,v in ipairs(lookupTable) do
+    StatusManager:commitUpdate(string.format("Updater","[%d/%d] Updating file: '%s'",k, #lookupTable, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1),self)
+    local handle = fs.open(v.file_name, "w")
+    for k1,v1 in ipairs(lookupTable[k].sources) do
+      StatusManager:commitUpdate(string.format("Updater","[%d/%d](%d/%d) Updating file: '%s'",k, #lookupTable,k1, #lookupTable[k].sources, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1),self)
+      handle.writeLine(v1)
+    end
+    handle.flush()
+    handle.close()
+    
+    Updater:setApiVersion(v.file_name,v.version)
+  end
+  
+  StatusManager:commitClose("Updater","Finished.",100,self)
+  return true
+end
+function Updater.httpGet(url)
+  local h = http.get(url)
+  local result = false
+  if h.getResponseCode() == 200 then
+    result = true
+  else
+    h.close()
+  end
+  return result, h
+end
 
 
 
