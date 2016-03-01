@@ -107,11 +107,11 @@ function string.unwrap(s, opener, closer)
   return result
 end
 function string.unwrapOnce(s, opener, closer)
-  s = s:gsub(opener,"",1)
-  return string.sub(s,s:len() - closer:len())
+  s = string.gsub(s,opener,"",1)
+  return string.sub(s,1, string.len(s) - string.len(closer))
 end
 
-function bool.parseString(s)
+function string.toBool(s)
   s = string.gsub(s," ","")
   return s == "true"
 end
@@ -271,13 +271,13 @@ function StatusManager:_fire(e)
   end
 end
 function StatusManager:commitInitial(sender_name, message, percentage, sender)
-  self._fire({sender_name = sender_name, message = message, percentage = percentage, init = true, close = false, sender = sender})
+  self:_fire({sender_name = sender_name, message = message, percentage = percentage, init = true, close = false, sender = sender})
 end
 function StatusManager:commitUpdate(sender_name, message, percentage, sender)
-  self._fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = false, sender = sender})
+  self:_fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = false, sender = sender})
 end
 function StatusManager:commitClose(sender_name, message, percentage, sender)
-  self._fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = true, sender = sender})
+  self:_fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = true, sender = sender})
 end
 
 Updater = {versions = {}}
@@ -325,7 +325,7 @@ function Updater:run()
         result.net_files = string.split(string.unwrapOnce(unwrapped_split[1], "{", "}"), "/")
         result.version = tonumber(unwrapped_split[2])
         result.file_name = unwrapped_split[3]
-        result.forceUpdate = bool.parseString(unwrapped_split[4])
+        result.forceUpdate = string.toBool(unwrapped_split[4])
         
         if result.forceUpdate or (self:getApiVersion(result.file_name) < result.version) then
           table.insert(lookupTable, result)
@@ -340,13 +340,13 @@ function Updater:run()
   end
   
   for k,v in ipairs(lookupTable) do
-    StatusManager:commitUpdate(string.format("Updater","[%d/%d] Getting files from server.",k, #lookupTable), 100 / (#lookupTable + 2) * (k),self)
+    StatusManager:commitUpdate("Updater",string.format("[%d/%d] Getting files from server.",k, #lookupTable), 100 / (#lookupTable + 2) * (k),self)
     lookupTable[k].sources = {}
     for k1, v1 in ipairs(v.net_files) do
-      StatusManager:commitUpdate(string.format("Updater","[%d/%d](%d/%d) Getting file: '%s'",k, #lookupTable, k1, #v.net_files, v1), 100 / (#lookupTable + 2) * (k),self)
+      StatusManager:commitUpdate("Updater",string.format("[%d/%d](%d/%d) Getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100 / (#lookupTable + 2) * (k),self)
       local success, handle = Updater.httpGet(updateUrl..v1)
       if not success then
-        StatusManager:commitClose(string.format("Updater","[%d/%d](%d/%d) Failed getting file: '%s'",k, #lookupTable, k1, #v.net_files, v1), 100,self)
+        StatusManager:commitClose("Updater",string.format("[%d/%d](%d/%d) Failed getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100,self)
         return false
       end
       table.insert(lookupTable[k].sources,k1,handle.readAll())
@@ -355,10 +355,10 @@ function Updater:run()
   end
   
   for k,v in ipairs(lookupTable) do
-    StatusManager:commitUpdate(string.format("Updater","[%d/%d] Updating file: '%s'",k, #lookupTable, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1),self)
+    StatusManager:commitUpdate("Updater",string.format("[%d/%d] Updating file: \'%s\'",k, #lookupTable, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1),self)
     local handle = fs.open(v.file_name, "w")
     for k1,v1 in ipairs(lookupTable[k].sources) do
-      StatusManager:commitUpdate(string.format("Updater","[%d/%d](%d/%d) Updating file: '%s'",k, #lookupTable,k1, #lookupTable[k].sources, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1),self)
+      StatusManager:commitUpdate("Updater",string.format("[%d/%d](%d/%d) Updating file: \'%s\'",k, #lookupTable,k1, #lookupTable[k].sources, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1),self)
       handle.writeLine(v1)
     end
     handle.flush()
