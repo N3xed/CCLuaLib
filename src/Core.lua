@@ -61,6 +61,17 @@ function EventManager:fireEventSync(name, ...)
   end
 end
 
+function table:init()
+end
+function table:new(o, ...)
+  o = o or {}
+  setmetatable(o,self)
+  o.super = self
+  self.__index = self
+  o:init(...)
+  return o
+end
+
 function string.split(s, delimiter)
   local result = { }
   local from  = 1
