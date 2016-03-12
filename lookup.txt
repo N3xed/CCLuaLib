@@ -1,3 +1,4 @@
 {{Core.lua},0.1,Core.api,true};
-{{Ui.lua},0.1,Ui.api,true};
+{{Ui/ThemeManager.lua|Ui/UiContainer.lua|Ui/UiManager.lua|Ui/UiObject.lua|Ui/EventDispatcher.lua|Ui/UiLabel.lua},0.1,Ui.api,true};
+{{Graphics/Graphics.lua|Graphics/Rect.lua},0.1,Graphics.api,true};
 {{main.lua},0.1,main,true};

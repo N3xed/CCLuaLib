@@ -63,13 +63,20 @@ end
 
 function table:init()
 end
-function table:new(o, ...)
+function extend(base, o)
   o = o or {}
-  setmetatable(o,self)
-  o.super = self
-  self.__index = self
-  o:init(...)
+  setmetatable(o, base)
+  o.super = base
+  base.__index = base
   return o
+end
+function new(o, ...)
+  result = {}
+  setmetatable(result,o)
+  result.super = o
+  o.__index = o
+  result:init(...)
+  return result
 end
 
 function string.split(s, delimiter)
@@ -121,7 +128,6 @@ function string.unwrapOnce(s, opener, closer)
   s = string.gsub(s,opener,"",1)
   return string.sub(s,1, string.len(s) - string.len(closer))
 end
-
 function string.toBool(s)
   s = string.gsub(s," ","")
   return s == "true"
@@ -332,7 +338,7 @@ function Updater:run()
       if e ~= "" then
         local unwrapped_split = string.split(string.unwrapOnce(e, "{", "}"), ",")
         local result = {}
-        result.net_files = string.split(string.unwrapOnce(unwrapped_split[1], "{", "}"), "/")
+        result.net_files = string.split(string.unwrapOnce(unwrapped_split[1], "{", "}"), "|")
         result.version = tonumber(unwrapped_split[2])
         result.file_name = unwrapped_split[3]
         result.forceUpdate = string.toBool(unwrapped_split[4])
@@ -390,9 +396,6 @@ function Updater.httpGet(url)
   end
   return result, h
 end
-
-
-
 
 
 
