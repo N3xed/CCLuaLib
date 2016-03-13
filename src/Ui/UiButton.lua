@@ -1,6 +1,9 @@
 UiButton = extend(UiObject, {text = "", theme = nil, listenerCollection = nil, active = false})
 function UiButton:init(x, y, width, height)
-  self.super.init(self, x, y, width, height)
+  self.x = x
+  self.y = y
+  self.width = width
+  self.height = height
   self.theme = ThemeManager:getTheme("button")
   self.listenerCollection = new(EventListenerCollection)
 end

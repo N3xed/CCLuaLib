@@ -1,6 +1,9 @@
 UiWindow = extend(UiObject,{elementCollection = nil, title = "", theme = nil, dragging = false})
 function UiWindow:init(x, y, width, height)
-  self.super.init(self, x, y, width, height)
+  self.x = x
+  self.y = y
+  self.width = width
+  self.height = height
   self.theme = ThemeManager:getTheme("window")
   self.elementCollection = new(UiContainer,x, y + self.theme.border_width, self.width, self.height - self.theme.border_width)
 end

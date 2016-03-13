@@ -1,6 +1,4 @@
 EventDispatcher = extend(table, {eventName = nil, eventObj = nil})
-function EventDispatcher:init()
-end
 function EventDispatcher:set(name, event)
   self.eventName = name
   self.eventObj = event

@@ -66,7 +66,6 @@ end
 function extend(base, o)
   o = o or {}
   setmetatable(o, base)
-  o.super = base
   base.__index = base
   return o
 end

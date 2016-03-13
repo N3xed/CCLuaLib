@@ -1,6 +1,9 @@
 UiLabel = extend(UiObject, {text = "", theme = nil, listeners = {}, listenerCollection = nil})
 function UiLabel:init(x, y, text)
-  self.super.init(self, x, y, string.len(text), 1)
+  self.x = x
+  self.y = y
+  self.width = string.len(text)
+  self.height = 1
   self.text = text
   self.theme = ThemeManager:getTheme("label")
   self.listenerCollection = new(EventListenerCollection)
