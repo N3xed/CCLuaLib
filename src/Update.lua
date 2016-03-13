@@ -1,8 +1,8 @@
 shell.run("Core.api")
-shell.run("Ui.api")
+--shell.run("Ui.api")
 
 function status_func(e)
-  print(string.format("sender_name:\'%s\', message:\'%s\', percentage:\'%d\'", e.sender_name, e.message, e.percentage))
+  print(string.format("[%s](%d) %s", e.sender_name, e.percentage, e.message))
 end
 
 function init()
@@ -12,6 +12,7 @@ function init()
   if Updater:run() then
     ConsoleManager:log("Updated. Rebooting computer...")
   end
+  Config:save()
 end
 
 init()

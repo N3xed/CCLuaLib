@@ -1,4 +1,4 @@
-Graphics = {height = 0, width = 0, _monitor = false, scale = 1, xOffset = 0, yOffset = 0}
+Graphics = {_monitor = false, scale = 1, xOffset = 0, yOffset = 0}
 function Graphics:clear()
   term.clear()
 end

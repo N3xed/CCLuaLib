@@ -1,7 +1,11 @@
-UiManager = {tickListeners = {}, running = false, initialized = false, listeners = {}}
+UiManager = {tickListeners = {}, running = false, initialized = false, listeners = {}, width = 0, height = 0}
 function UiManager:init()
   if not self.initialized then
     self.initialized = true
+    local w,h = term.getSize()
+    self.width = w
+    self.height = h
+    ThemeManager:init()
     EventManager:addEventListener("timer", self.tick_listener,self)
     EventManager:addEventListener("key", self.key_listener, self)
     EventManager:addEventListener("key_up", self.keyUp_listener, self)
@@ -12,7 +16,7 @@ function UiManager:init()
     EventManager:addEventListener("mouse_up", self.mouseUp_listener, self)
     EventManager:addEventListener("term_resize", self.resize_listener, self)
     
-    self.collection = UiContainer:new(nil, 0, 0, Graphics.width, Graphics.height)
+    self.collection = new(UiContainer, 0, 0, self.width, self.height)
   end
 end
 function UiManager:startTick()
@@ -82,7 +86,10 @@ function UiManager:mouseUp_listener(button, x, y)
 end
 function UiManager:resize_listener()
   local w,h = term.getSize()
-  Graphics:setSize(w,h)
+  self.width = w
+  self.height = h
+  self.collection.width = w
+  self.collection.height = h
   local ev = {width = w, height = h, handled = false}
   self.collection:onEvent("resized", ev)
   self:fireEvent("resized", ev)

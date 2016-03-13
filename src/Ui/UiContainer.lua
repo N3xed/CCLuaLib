@@ -1,6 +1,6 @@
 UiContainer = extend(UiObject, {elements = {}, lastFocusObject = nil, dispatcher = nil, x = 0, y = 0, width = 0, height = 0, lastFocusObject = nil})
 function UiContainer:init(x, y, width, height)
-  self.dispatcher = EventDispatcher:new()
+  self.dispatcher = new(EventDispatcher)
   self.x = x
   self.y = y
   self.width = width
@@ -21,11 +21,13 @@ function UiContainer:removeUiObject(obj)
   return false
 end
 function UiContainer:draw()
+  Graphics:translate(self.x,self.y)
   for i,e in ipairs(self.elements) do
     if e.visible then
       e:draw()
     end
   end
+  Graphics:translate(-self.x,-self.y)
 end
 s = "positionChange, sizeChange, visibleChange, focusChange, resized, keyDown, keyUp, mouseDown, mouseUp, mouseScroll, mouseDrag, charReceive"
 function UiContainer:onEvent(name, ev)

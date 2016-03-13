@@ -1,11 +1,11 @@
 Theme = extend(table,{
-  background = 0,
-  background_active = 0,
-  border = 0,
-  border_active = 0,
-  border_width = 0,
-  font_color = 0xaaaaaa,
-  font_color_active = 0xbbbbbb
+  background = colors.gray,
+  background_active = colors.lightGray,
+  border = colors.green,
+  border_active = colors.red,
+  border_width = 3,
+  font_color = colors.white,
+  font_color_active = colors.white
 })
 
 ThemeManager = {themes = {}, default = Theme}

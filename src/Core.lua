@@ -91,39 +91,6 @@ function string.split(s, delimiter)
   table.insert( result, string.sub( s, from  ) )
   return result
 end
-function string.unwrap(s, opener, closer)
-  local result = {}
-  local from = 1
-  local to = 1
-  local delim_from, delim_to = string.find(s,opener,from)
-  local openerCount = 0
-  while delim_from or (openerCount > 0) do
-    if openerCount == 0 then
-      from = delim_to + 1
-      to = from
-    else
-      local delim1_from, delim1_to = string.find(s,closer,to)
-      if not delim1_from then
-        break
-      end
-      if (delim1_from < delim_from) or not delim_from then
-        if (delim1_from - 1) < from then
-          table.insert(result,"")
-        else
-          table.insert(result,string.sub(s,from,delim1_from - 1))
-        end
-        openerCount = 0
-        from = delim1_to + 1
-        to = from
-      else 
-        openerCount = openerCount + 1
-        to = delim1_to + 1
-      end
-    end
-    delim_from, delim_to = string.find(s,opener,to)
-  end
-  return result
-end
 function string.unwrapOnce(s, opener, closer)
   s = string.gsub(s,opener,"",1)
   return string.sub(s,1, string.len(s) - string.len(closer))
@@ -359,14 +326,16 @@ function Updater:run()
     StatusManager:commitUpdate("Updater",string.format("[%d/%d] Getting files from server.",k, #lookupTable), 100 / (#lookupTable + 2) * (k),self)
     lookupTable[k].sources = {}
     for k1, v1 in ipairs(v.net_files) do
-      StatusManager:commitUpdate("Updater",string.format("[%d/%d](%d/%d) Getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100 / (#lookupTable + 2) * (k),self)
-      local success, handle = Updater.httpGet(updateUrl..v1)
-      if not success then
-        StatusManager:commitClose("Updater",string.format("[%d/%d](%d/%d) Failed getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100,self)
-        return false
+      if v1 ~= "" then
+        StatusManager:commitUpdate("Updater",string.format("[%d/%d](%d/%d) Getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100 / (#lookupTable + 2) * (k),self)
+        local success, handle = Updater.httpGet(updateUrl..v1)
+        if not success then
+          StatusManager:commitClose("Updater",string.format("[%d/%d](%d/%d) Failed getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100,self)
+          return false
+        end
+        table.insert(lookupTable[k].sources,k1,handle.readAll())
+        handle.close()
       end
-      table.insert(lookupTable[k].sources,k1,handle.readAll())
-      handle.close()
     end
   end
   
