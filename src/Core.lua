@@ -70,9 +70,8 @@ function extend(base, o)
   return o
 end
 function new(o, ...)
-  result = {}
+  local result = {}
   setmetatable(result,o)
-  result.super = o
   o.__index = o
   result:init(...)
   return result
@@ -123,7 +122,7 @@ end
 
 CommandManager = {commandHandlers = {}}
 function CommandManager:handler(cmd)
-  cmds = string.split(cmd, " ")
+  local cmds = string.split(cmd, " ")
   for i=1, #self.commandHandlers do
     if self.commandHandlers[i].name == cmds[1] then
       self.commandHandlers[i].handler(cmds)

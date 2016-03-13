@@ -6,6 +6,9 @@ function UiWindow:init(x, y, width, height)
   self.height = height
   self.theme = ThemeManager:getTheme("window")
   self.container = new(UiContainer,x, y + self.theme.border_width, self.width, self.height - self.theme.border_width)
+  if not self.container then
+    print("UiWindow: container nil")
+  end
 end
 function UiWindow:draw()
   Graphics:fillRect(self.x,self.y,self.width,self.theme.border_width,self.theme.border)
