@@ -1,4 +1,4 @@
-UiLabel = extend(UiObject, {text = "", theme = nil, listeners = {}, listenerCollection = nil})
+UiLabel = extend(UiObject, {text = "", theme = nil,listenerCollection = nil})
 function UiLabel:init(x, y, text)
   self.x = x
   self.y = y

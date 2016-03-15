@@ -61,25 +61,25 @@ function UiManager:char_listener(char)
   self:draw()
 end
 function UiManager:mouseClick_listener(button, x, y)
-  local ev = {button = button, x = x, y = y, handled = false}
+  local ev = {button = button, x = x - 1, y = y - 1, handled = false}
   self.collection:onEvent("mouseDown", ev)
   self:fireEvent("mouseDown", ev)
   self:draw()
 end
 function UiManager:mouseDrag_listener(button, x, y)
-  local ev = {button = button, x = x, y = y, handled = false}
+  local ev = {button = button, x = x - 1, y = y - 1, handled = false}
   self.collection:onEvent("mouseDrag", ev)
   self:fireEvent("mouseDrag", ev)
   self:draw()
 end
 function UiManager:mouseScroll_listener(direction, x, y)
-  local ev = {direction = direction, x = x, y = y, handled = false}
+  local ev = {direction = direction, x = x - 1, y = y - 1, handled = false}
   self.collection:onEvent("mouseScroll", ev)
   self:fireEvent("mouseScroll", ev)
   self:draw()
 end
 function UiManager:mouseUp_listener(button, x, y)
-  local ev = {button = button, x = x, y = y, handled = false}
+  local ev = {button = button, x = x - 1, y = y - 1, handled = false}
   self.collection:onEvent("mouseUp", ev)
   self:fireEvent("mouseUp", ev)
   self:draw()

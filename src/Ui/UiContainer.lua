@@ -1,4 +1,4 @@
-UiContainer = extend(UiObject, {elements = nil, lastFocusObject = nil, dispatcher = nil, x = 0, y = 0, width = 0, height = 0, lastFocusObject = nil})
+UiContainer = extend(UiObject, {x = 0, y = 0, width = 0, height = 0})
 function UiContainer:init(x, y, width, height)
   self.dispatcher = new(EventDispatcher)
   self.x = x
@@ -6,6 +6,7 @@ function UiContainer:init(x, y, width, height)
   self.width = width
   self.height = height
   self.elements = {}
+  self.lastFocusObject = nil
 end
 function UiContainer:addUiObject(obj)
   obj.parent = self
@@ -63,14 +64,6 @@ end
 function UiContainer:sizeChange(ev)
 end
 function UiContainer:positionChange(ev)
-  ev.x = ev.x - self.x
-  ev.y = ev.y - self.y  
-  for i=#self.elements, 1, -1 do
-    local e = self.elements[i]
-    e:onEvent("positionChange", ev)
-  end
-  ev.x = ev.x + self.x
-  ev.y = ev.y + self.y
 end
 function UiContainer:keyDown(ev)
   if self.lastFocusObject then
@@ -127,7 +120,7 @@ function UiContainer:mouseDown(ev)
   local found = false
   for i=#self.elements, 1, -1 do
     local e = self.elements[i]
-    if Rect.containsPoint(self.x,self.y,self.width,self.height,ev.x,ev.y) then
+    if Rect.containsPoint(e.x,e.y,e.width,e.height,ev.x,ev.y) then
       found = true
       if e ~= self.lastFocusObject then
         if self.lastFocusObject then

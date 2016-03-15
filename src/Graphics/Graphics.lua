@@ -34,8 +34,8 @@ function Graphics:writeString(x, y, text, color)
   if color then
     term.setTextColor(color)
   end
-  local xp = x + self.xOffset
-  local yp = y + self.yOffset
+  local xp = x + self.xOffset + 1
+  local yp = y + self.yOffset + 1
   
   term.setCursorPos(xp, yp)
   term.write(text)
@@ -52,27 +52,23 @@ function Graphics:getOutput()
   return term.current()
 end
 function Graphics:drawPixel(x, y, color)
-  local xp = x + self.xOffset
-  local yp = y + self.yOffset
-  if xp > UiManager.width or yp > UiManager.height then
-    return
-  end
+  local xp = x + self.xOffset + 1
+  local yp = y + self.yOffset + 1
+  term.setBackgroundColor(color)
   paintutils.drawPixel(xp, yp, color)
 end
 function Graphics:drawRect(x, y, width, height, color)
-  local xp = x + self.xOffset
-  local yp = y + self.yOffset
-  
-  paintutils.drawBox(xp, yp, xp + width, yp + height, color)
+  local xp = x + self.xOffset + 1
+  local yp = y + self.yOffset + 1
+  paintutils.drawBox(xp, yp, xp + width - 1, yp + height - 1, color)
 end
 function Graphics:fillRect(x, y, width, height, color)
-  local xp = x + self.xOffset
-  local yp = y + self.yOffset
-  
-  paintutils.drawFilledBox(xp, yp, xp + width, yp + height, color)
+  local xp = x + self.xOffset + 1
+  local yp = y + self.yOffset + 1
+  paintutils.drawFilledBox(xp, yp, xp + width - 1, yp + height - 1, color)
 end
 function Graphics:drawLine(x1, y1, x2, y2, color)
-  paintutils.drawLine(x1 + self.xOffset, y1 + self.yOffset, x2 + self.xOffset, y2 + self.yOffset, color)
+  paintutils.drawLine(x1 + self.xOffset + 1, y1 + self.yOffset + 1, x2 + self.xOffset + 1, y2 + self.yOffset + 1, color)
 end
 function Graphics:translate(xo, yo)
   self.xOffset = self.xOffset + xo

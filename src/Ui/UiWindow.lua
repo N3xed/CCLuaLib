@@ -10,7 +10,7 @@ function UiWindow:init(x, y, width, height)
 end
 function UiWindow:draw()
   Graphics:fillRect(self.x,self.y,self.width,self.theme.border_width,self.theme.border)
-  Graphics:writeString(self.x + 2, self.y + (self.theme.border_width / 2),self.title,self.theme.font_color)
+  Graphics:writeString(self.x, self.y + (self.theme.border_width / 2),self.title,self.theme.font_color)
   -- Button
   Graphics:fillRect(self.x,self.y + self.theme.border_width, self.width,self.height - self.theme.border_width,self.theme.background)
   self.container:draw()
@@ -58,14 +58,10 @@ end
 function UiWindow:setPosition(x, y)
   local dx = x - self.x
   local dy = y - self.y
-  self.container.x = self.container.x + dx
-  self.container.y = self.container.y + dy
+  self.container:move(dx, dy)
   self.x = x
   self.y = y
-  self:onEvent("positionChange", {x = x, y = y, deltax = dx, deltay = dy})
-  if self.visible then
-    UiManager:draw()
-  end
+  self:onEvent("positionChange", {deltax = dx, deltay = dy})
 end
 function UiWindow:setTitle(text)
   self.title = text

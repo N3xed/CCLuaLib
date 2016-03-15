@@ -17,7 +17,12 @@ function UiObject:setPosition(x, y)
   local dy = y - self.y
   self.x = x
   self.y = y
-  self:onEvent("positionChange", {x = x, y = y, deltax = dx, deltay = dy})
+  self:onEvent("positionChange", {deltax = dx, deltay = dy})
+end
+function UiObject:move(xo, yo)
+  self.x = self.x + xo
+  self.y = self.y + yo
+  self:onEvent("positionChange", {deltax = xo, deltay = yo})
 end
 function UiObject:setSize(width, height)
   self.width = width

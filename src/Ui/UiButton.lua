@@ -10,11 +10,12 @@ end
 function UiButton:draw()
   if self.active then
     Graphics:fillRect(self.x,self.y,self.width,self.height,self.theme.background_active)
+    Graphics:setBackgroundColor(self.theme.background_active)
   else
     Graphics:fillRect(self.x, self.y, self.width, self.height, self.theme.background)
+    Graphics:setBackgroundColor(self.theme.background)
   end
   Graphics:writeStringCentered(self.x,self.y,self.width,self.height,self.text,self.theme.font_color)
-  self.listenerCollection:fireEvent("draw")
 end
 function UiButton:onEvent(name, ev)
   if name == "mouseDown" then
