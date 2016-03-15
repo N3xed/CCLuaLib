@@ -3,7 +3,7 @@ Theme = extend(table,{
   background_active = colors.lightGray,
   border = colors.green,
   border_active = colors.red,
-  border_width = 3,
+  border_width = 1,
   font_color = colors.white,
   font_color_active = colors.white
 })

@@ -1,10 +1,11 @@
-UiContainer = extend(UiObject, {elements = {}, lastFocusObject = nil, dispatcher = nil, x = 0, y = 0, width = 0, height = 0, lastFocusObject = nil})
+UiContainer = extend(UiObject, {elements = nil, lastFocusObject = nil, dispatcher = nil, x = 0, y = 0, width = 0, height = 0, lastFocusObject = nil})
 function UiContainer:init(x, y, width, height)
   self.dispatcher = new(EventDispatcher)
   self.x = x
   self.y = y
   self.width = width
   self.height = height
+  self.elements = {}
 end
 function UiContainer:addUiObject(obj)
   obj.parent = self
@@ -29,21 +30,21 @@ function UiContainer:draw()
   end
   Graphics:translate(-self.x,-self.y)
 end
-s = "positionChange, sizeChange, visibleChange, focusChange, resized, keyDown, keyUp, mouseDown, mouseUp, mouseScroll, mouseDrag, charReceive"
+--positionChange, sizeChange, visibleChange, focusChange, resized, keyDown, keyUp, mouseDown, mouseUp, mouseScroll, mouseDrag, charReceive
 function UiContainer:onEvent(name, ev)
   self.dispatcher:set(name, ev)
   self.dispatcher:dispatch("mouseDown", self.mouseDown, self)
-  self.dispatcher:dispatch("mouseUp", nil, self)
-  self.dispatcher:dispatch("mouseScroll", nil, self)
-  self.dispatcher:dispatch("mouseDrag", nil, self)
-  self.dispatcher:dispatch("keyDown", nil, self)
-  self.dispatcher:dispatch("keyUp", nil, self)
-  self.dispatcher:dispatch("charReceive", nil, self)
-  self.dispatcher:dispatch("resized", nil, self)
-  self.dispatcher:dispatch("focusChange", nil, self)
+  self.dispatcher:dispatch("mouseUp", self.mouseUp, self)
+  self.dispatcher:dispatch("mouseScroll", self.mouseScroll, self)
+  self.dispatcher:dispatch("mouseDrag", self.mouseDrag, self)
+  self.dispatcher:dispatch("keyDown", self.keyDown, self)
+  self.dispatcher:dispatch("keyUp", self.keyUp, self)
+  self.dispatcher:dispatch("charReceive", self.charReceive, self)
+  self.dispatcher:dispatch("resized", self.resized, self)
+  self.dispatcher:dispatch("focusChange", self.focusChange, self)
   --self.dispatcher:dispatch("visibleChange", nil, self)
   --self.dispatcher:dispatch("sizeChange", nil, self)
-  self.dispatcher:dispatch("positionChange", nil, self)
+  self.dispatcher:dispatch("positionChange", self.positionChange, self)
   self.dispatcher:remove()
 end
 function UiContainer:resized(ev)
@@ -89,7 +90,9 @@ end
 function UiContainer:mouseUp(ev)
   ev.x = ev.x - self.x
   ev.y = ev.y - self.y  
-  self.lastFocusObject:onEvent("mouseUp", ev)
+  if self.lastFocusObject then
+    self.lastFocusObject:onEvent("mouseUp", ev)
+  end
   ev.x = ev.x + self.x
   ev.y = ev.y + self.y
 end

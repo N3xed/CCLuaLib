@@ -1,5 +1,6 @@
 Graphics = {_monitor = false, scale = 1, xOffset = 0, yOffset = 0}
 function Graphics:clear()
+  term.setBackgroundColor(colors.black)
   term.clear()
 end
 function Graphics:setBackgroundColor(color)
@@ -33,7 +34,10 @@ function Graphics:writeString(x, y, text, color)
   if color then
     term.setTextColor(color)
   end
-  term.setCursorPos(x + self.xOffset, y + self.yOffset)
+  local xp = x + self.xOffset
+  local yp = y + self.yOffset
+  
+  term.setCursorPos(xp, yp)
   term.write(text)
 end
 function Graphics:writeStringCentered(x, y, width, height, text, color)
@@ -48,13 +52,24 @@ function Graphics:getOutput()
   return term.current()
 end
 function Graphics:drawPixel(x, y, color)
-  paintutils.drawPixel(x + self.xOffset, y + self.yOffset, color)
+  local xp = x + self.xOffset
+  local yp = y + self.yOffset
+  if xp > UiManager.width or yp > UiManager.height then
+    return
+  end
+  paintutils.drawPixel(xp, yp, color)
 end
 function Graphics:drawRect(x, y, width, height, color)
-  paintutils.drawBox(x + self.xOffset, y + self.yOffset, x + width + self.xOffset, y + height + self.yOffset, color)
+  local xp = x + self.xOffset
+  local yp = y + self.yOffset
+  
+  paintutils.drawBox(xp, yp, xp + width, yp + height, color)
 end
 function Graphics:fillRect(x, y, width, height, color)
-  paintutils.drawFilledBox(x + self.xOffset, y + self.yOffset, x + width + self.xOffset, y + height + self.yOffset, color)
+  local xp = x + self.xOffset
+  local yp = y + self.yOffset
+  
+  paintutils.drawFilledBox(xp, yp, xp + width, yp + height, color)
 end
 function Graphics:drawLine(x1, y1, x2, y2, color)
   paintutils.drawLine(x1 + self.xOffset, y1 + self.yOffset, x2 + self.xOffset, y2 + self.yOffset, color)

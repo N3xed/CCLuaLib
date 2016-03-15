@@ -6,9 +6,7 @@ function UiWindow:init(x, y, width, height)
   self.height = height
   self.theme = ThemeManager:getTheme("window")
   self.container = new(UiContainer,x, y + self.theme.border_width, self.width, self.height - self.theme.border_width)
-  if not self.container then
-    print("UiWindow: container nil")
-  end
+  self.draggingOffset = {x = 0, y = 0}
 end
 function UiWindow:draw()
   Graphics:fillRect(self.x,self.y,self.width,self.theme.border_width,self.theme.border)
@@ -36,6 +34,8 @@ function UiWindow:onEvent(name, ev)
 end
 function UiWindow:mouseDown(ev)
   if Rect.containsPoint(self.x,self.y,self.width,self.theme.border_width,ev.x,ev.y) then
+    self.draggingOffset.x = self.x - ev.x
+    self.draggingOffset.y = self.y - ev.y
     self.dragging = true
   else
     self.container:onEvent("mouseDown", ev)
@@ -49,7 +49,7 @@ function UiWindow:mouseUp(ev)
 end
 function UiWindow:mouseDrag(ev)
   if self.dragging then
-    self:setPosition(ev.x, ev.y)
+    self:setPosition(ev.x + self.draggingOffset.x, ev.y + self.draggingOffset.y)
   end
   if not Rect.containsPoint(self.x,self.y,self.width,self.theme.border_width,ev.x,ev.y) then
     self.container:onEvent("mouseUp", ev)
@@ -69,13 +69,7 @@ function UiWindow:setPosition(x, y)
 end
 function UiWindow:setTitle(text)
   self.title = text
-  if self.visible then
-    UiManager:draw()
-  end
 end
 function UiWindow:setTheme(theme)
   self.theme = theme
-  if self.visible then
-    UiManager:draw()
-  end
 end

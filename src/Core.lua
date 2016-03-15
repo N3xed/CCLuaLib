@@ -3,12 +3,11 @@ function EventManager:run()
   while self.running do
     local event, arg1, arg2, arg3 = os.pullEvent()
     if self.eventHandlers[event] then
-      for i=1, #self.eventHandlers[event] do
-        local e = self.eventHandlers[event][i]
+      for i,e in ipairs(self.eventHandlers[event]) do
         if e.context then
           e.handler(e.context, arg1, arg2, arg3)
         else
-          e.handler(arg1, arg2, arg3)
+          e.handler(e.context, arg1, arg2, arg3)
         end
       end
     end
@@ -226,7 +225,6 @@ function Config:save()
   h.write(textutils.serialize(self.data))
   h.flush()
   h.close()
-  EventManager:fireEvent("config_save", "Config")
 end
 
 StatusManager = {handlers = {}}
@@ -280,8 +278,8 @@ function Updater:setApiVersion(name, version)
   self.versions[name] = version
 end
 function Updater:run()
-  local lookupUrl = "https://raw.githubusercontent.com/N3xed/ComputerCraft/master/lookup.txt"
-  local updateUrl = "https://raw.githubusercontent.com/N3xed/ComputerCraft/master/src/"
+  local lookupUrl = "http://192.168.1.1/lookup.txt"
+  local updateUrl = "http://192.168.1.1/src/"
   
   StatusManager:commitInitial("Updater","Getting lookup.", 0, self)
   

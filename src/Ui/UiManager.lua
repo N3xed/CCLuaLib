@@ -121,16 +121,15 @@ function UiManager:fireEvent(name, ...)
 end
 function UiManager:draw()
   Graphics:clear()
+  --print("UiManager:draw called")
   self.collection:draw()
   self:fireEvent("draw")
 end
 function UiManager:addUiObject(obj)
   self.collection:addUiObject(obj)
-  self:draw()
 end
 function UiManager:removeUiObject(obj)
   self.collection:removeUiObject(obj)
-  self:draw()
 end
 function UiManager:addEventListener(name, func, context)
   if self.listeners[name] then

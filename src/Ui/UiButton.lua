@@ -26,15 +26,9 @@ function UiButton:onEvent(name, ev)
 end
 function UiButton:setText(text)
   self.text = text
-  if self.visible then
-    UiManager:draw()
-  end
 end
 function UiButton:setTheme(theme)
   self.theme = theme
-  if self.visible then
-    UiManager:draw()
-  end
 end
 function UiButton:listeners()
   return self.listenerCollection

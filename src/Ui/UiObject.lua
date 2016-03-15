@@ -18,22 +18,15 @@ function UiObject:setPosition(x, y)
   self.x = x
   self.y = y
   self:onEvent("positionChange", {x = x, y = y, deltax = dx, deltay = dy})
-  if self.visible then
-    UiManager:draw()
-  end
 end
 function UiObject:setSize(width, height)
   self.width = width
   self.height = height
   self:onEvent("sizeChange", {width = width, height = height})
-  if self.visible then
-    UiManager:draw()
-  end
 end
 function UiObject:setVisible(value)
   self.visible = value
   self:onEvent("visibleChange", {visible = value})
-  UiManager:draw()
 end
 function UiObject:draw()
 end
