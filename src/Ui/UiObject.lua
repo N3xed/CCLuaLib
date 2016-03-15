@@ -1,4 +1,4 @@
-UiObject = extend(table,{focused = false, visible = true, x = 0, y = 0, width = 0, height = 0, parent = nil})
+UiObject = extend(table,{focused = false, visible = true, x = 0, y = 0, width = 0, height = 0, parent = nil, enabled = true})
 function UiObject:init(x, y, width, height)
   self.x = x
   self.y = y
@@ -11,7 +11,9 @@ end
 --
 function UiObject:onEvent(name, ev)
 end
-
+function UiObject:setEnabled(value)
+  self.enabled = value
+end
 function UiObject:setPosition(x, y)
   local dx = x - self.x
   local dy = y - self.y

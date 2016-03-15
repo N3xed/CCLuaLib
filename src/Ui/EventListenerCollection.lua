@@ -1,6 +1,6 @@
 EventListenerCollection = extend(table, {listeners = {}})
 function EventListenerCollection:addEventListener(name, func, context)
-  if self.listeners[name] then
+  if not self.listeners[name] then
     self.listeners[name] = {}
   end
   table.insert(self.listeners[name], {listener = func, context = context})

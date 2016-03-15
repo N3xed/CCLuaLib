@@ -45,7 +45,7 @@ function UiContainer:onEvent(name, ev)
   self.dispatcher:dispatch("focusChange", self.focusChange, self)
   --self.dispatcher:dispatch("visibleChange", nil, self)
   --self.dispatcher:dispatch("sizeChange", nil, self)
-  self.dispatcher:dispatch("positionChange", self.positionChange, self)
+  --self.dispatcher:dispatch("positionChange", self.positionChange, self)
   self.dispatcher:remove()
 end
 function UiContainer:resized(ev)

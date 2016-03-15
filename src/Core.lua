@@ -227,36 +227,49 @@ function Config:save()
   h.close()
 end
 
-StatusManager = {handlers = {}}
-function StatusManager:addStatusHandler(func, context)
-  table.insert(self.handlers, {handler = func, context = context})
+StateContext = {}
+function StateContext:init(name, sender, handler_name)
+  self.name = name
+  self.sender = sender
+  self.handler_name = handler_name
 end
-function StatusManager:removeStatusHandler(func)
-  for i=1, #self.handlers do
-    if self.handlers[i].handler == func then
+function StateContext:commit(message, percentage)
+  StateManager:fire(self.handler_name, {name = self.name, sender = self.sender, message = message, percentage = percentage, finished = false})
+end
+function StateContext:close(message)
+  StateManager:fire(self.handler_name, {name = self.name, sender = self.sender, message = message, percentage = 100, finished = true})
+end
+
+StateManager = {handlers = {}}
+function StateManager:addHandler(name, func, context)
+  if not self.handlers[name] then
+    self.handlers[name] = {}
+  end
+
+  table.insert(self.handlers[name], {handler = func, context = context})
+end
+function StateManager:removeHandler(func)
+  for i,e in ipairs(self.handlers) do
+    if e.handler == func then
       table.remove(self.handlers,i)
       return true
     end
   end
   return false
 end
-function StatusManager:fire(ev)
-  for i,e in ipairs(self.handlers) do
-    if e.context then
-      e.handler(e.context, ev)
-    else
-      e.handler(ev)
+function StateManager:fire(name, ev)
+  if self.handlers[name] then
+    for i,e in ipairs(self.handlers[name]) do
+      if e.context then
+        e.handler(e.context, ev)
+      else
+        e.handler(ev)
+      end
     end
   end
 end
-function StatusManager:commitInitial(sender_name, message, percentage, sender)
-  self:fire({sender_name = sender_name, message = message, percentage = percentage, init = true, close = false, sender = sender})
-end
-function StatusManager:commitUpdate(sender_name, message, percentage, sender)
-  self:fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = false, sender = sender})
-end
-function StatusManager:commitClose(sender_name, message, percentage, sender)
-  self:fire({sender_name = sender_name, message = message, percentage = percentage, init = false, close = true, sender = sender})
+function StateManager:createContext(name, sender, handler_name)
+  return new(StateContext, name, sender, handler_name)
 end
 
 Updater = {versions = {}}
@@ -281,13 +294,14 @@ function Updater:run()
   local lookupUrl = "http://192.168.1.1/lookup.txt"
   local updateUrl = "http://192.168.1.1/src/"
   
-  StatusManager:commitInitial("Updater","Getting lookup.", 0, self)
+  local context = StateManager:createContext("Updater", self, "update")
+  context:commit("Getting lookup", 0)
   
   local lookupTable = {}
   do
     local success, handle = Updater.httpGet(lookupUrl)
     if not success then
-      StatusManager:commitClose("Updater","Failed",100,self)
+      context:close("Failed")
       return false
     end
     
@@ -314,19 +328,19 @@ function Updater:run()
   end
   
   if #lookupTable == 0 then
-    StatusManager:commitClose("Updater","No updates found. Finished.", 100,self)
+    context:close("No updates found")
     return false
   end
   
   for k,v in ipairs(lookupTable) do
-    StatusManager:commitUpdate("Updater",string.format("[%d/%d] Getting files from server.",k, #lookupTable), 100 / (#lookupTable + 2) * (k),self)
+    context:commit(string.format("[%d/%d] Getting files from server.",k, #lookupTable), 100 / (#lookupTable + 2) * (k))
     lookupTable[k].sources = {}
     for k1, v1 in ipairs(v.net_files) do
       if v1 ~= "" then
-        StatusManager:commitUpdate("Updater",string.format("[%d/%d](%d/%d) Getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100 / (#lookupTable + 2) * (k),self)
+        context:commit(string.format("[%d/%d](%d/%d) Getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100 / (#lookupTable + 2) * (k))
         local success, handle = Updater.httpGet(updateUrl..v1)
         if not success then
-          StatusManager:commitClose("Updater",string.format("[%d/%d](%d/%d) Failed getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1), 100,self)
+          context:close(string.format("[%d/%d](%d/%d) Failed getting file: \'%s\'",k, #lookupTable, k1, #v.net_files, v1))
           return false
         end
         table.insert(lookupTable[k].sources,k1,handle.readAll())
@@ -336,10 +350,10 @@ function Updater:run()
   end
   
   for k,v in ipairs(lookupTable) do
-    StatusManager:commitUpdate("Updater",string.format("[%d/%d] Updating file: \'%s\'",k, #lookupTable, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1),self)
+    context:commit(string.format("[%d/%d] Updating file: \'%s\'",k, #lookupTable, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1))
     local handle = fs.open(v.file_name, "w")
     for k1,v1 in ipairs(lookupTable[k].sources) do
-      StatusManager:commitUpdate("Updater",string.format("[%d/%d](%d/%d) Updating file: \'%s\'",k, #lookupTable,k1, #lookupTable[k].sources, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1),self)
+      context:commit(string.format("[%d/%d](%d/%d) Updating file: \'%s\'",k, #lookupTable,k1, #lookupTable[k].sources, v.file_name), 100 / (#lookupTable + 2) * (#lookupTable + 1))
       handle.writeLine(v1)
     end
     handle.flush()
@@ -348,7 +362,7 @@ function Updater:run()
     Updater:setApiVersion(v.file_name,v.version)
   end
   
-  StatusManager:commitClose("Updater","Finished.",100,self)
+  context:close("Finished")
   return true
 end
 function Updater.httpGet(url)

@@ -19,6 +19,20 @@ function UiManager:init()
     self.collection = new(UiContainer, 0, 0, self.width, self.height)
   end
 end
+function UiManager:dispose()
+  EventManager:removeEventHandler("timer",self.tick_listener)
+  EventManager:removeEventHandler("key",self.key_listener)
+  EventManager:removeEventHandler("key_up",self.keyUp_listener)
+  EventManager:removeEventHandler("char",self.char_listener)
+  EventManager:removeEventHandler("mouse_click",self.mouseClick_listener)
+  EventManager:removeEventHandler("mouse_drag",self.mouseDrag_listener)
+  EventManager:removeEventHandler("mouse_scroll",self.mouseScroll_listener)
+  EventManager:removeEventHandler("mouse_up",self.mouseUp_listener)
+  EventManager:removeEventHandler("term_resize",self.resize_listener)
+  Graphics:clear()
+  term.setCursorPos(1, 1)
+  Graphics:setTextColor(colors.white)
+end
 function UiManager:startTick()
   self.running = true
   self._timer = os.startTimer(1)
@@ -132,7 +146,7 @@ function UiManager:removeUiObject(obj)
   self.collection:removeUiObject(obj)
 end
 function UiManager:addEventListener(name, func, context)
-  if self.listeners[name] then
+  if not self.listeners[name] then
     self.listeners[name] = {}
   end
   table.insert(self.listeners[name],{listener = func, context = context})

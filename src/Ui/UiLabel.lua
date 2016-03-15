@@ -18,15 +18,9 @@ end
 function UiLabel:setText(text)
   self.text = text
   self.width = string.len(text)
-  if self.visible then
-    UiManager:draw()
-  end
 end
 function UiLabel:setTheme(theme)
   self.theme = theme
-  if self.visible then
-    UiManager:draw()
-  end
 end
 function UiLabel:listeners()
   return self.listenerCollection

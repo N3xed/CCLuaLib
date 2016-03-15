@@ -7,6 +7,7 @@ Ui/UiManager.lua|
 Ui/UiObject.lua|
 Ui/UiContainer.lua|
 Ui/UiLabel.lua|
+Ui/UiProgressbar.lua|
 Ui/UiButton.lua|
 Ui/UiWindow.lua},0.1,Ui.api,true};
 

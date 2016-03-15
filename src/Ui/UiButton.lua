@@ -8,7 +8,7 @@ function UiButton:init(x, y, width, height)
   self.listenerCollection = new(EventListenerCollection)
 end
 function UiButton:draw()
-  if self.active then
+  if self.active and self.enabled then
     Graphics:fillRect(self.x,self.y,self.width,self.height,self.theme.background_active)
     Graphics:setBackgroundColor(self.theme.background_active)
   else
@@ -23,7 +23,9 @@ function UiButton:onEvent(name, ev)
   elseif name == "mouseUp" then
     self.active = false
   end
-  self.listenerCollection:fireEvent(name, ev)
+  if self.enabled then
+    self.listenerCollection:fireEvent(name, ev)
+  end
 end
 function UiButton:setText(text)
   self.text = text
