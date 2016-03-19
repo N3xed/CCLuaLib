@@ -3,5 +3,10 @@
 
 **Contains:**
    - Many different managers for Events, Rednet, Commands ...
-   - Easy inheritance `extend(base, new)` and object creation `new(base, [arg1, arg2, arg3, ...])`
+   - Easy inheritance `extend(base, [new])` and object creation `new(base, [arg1, arg2, arg3, ...])`
    - Its own Ui Library
+
+**TODO:**
+   - Finish implementing item storage management
+   - Implement auto crafting
+   - Tidy up ui library
